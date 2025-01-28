@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 void print_grid(int **grid, int size) {
-    system("clear || cls");
+    //system("clear || cls");
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size*4+1; j++) {
             printf("-");
@@ -49,24 +49,9 @@ void add_number(int **grid, int size, int score) {
 }
 int move_left(int **grid, int size){
     int score=0;
-    for (int i = 0; i < size; i++) {
-        for (int j = 1; j < size; j++) {
-            if (grid[i][j] != 0) {
-                //jj=j
-                for (int jj = j; jj > 0; jj--) {
-                    if (grid[i][jj - 1] == grid[i][j]) {
-                        score += grid[i][j] * 2;
-                        grid[i][jj - 1] *= 2;
-                        grid[i][j] = 0;
-                        break;
-                    }
-                }
-            }
-        }
-    }
     //MOVEMENT
     for (int i = 0; i < size; i++) {
-        for (int j = 1; j < size; j++) {
+        for (int j = 0; j < size; j++) {
             if (grid[i][j] != 0) {
                 for (int jj = 0; jj < j; jj++) {
                     if (grid[i][jj] == 0) {
@@ -78,19 +63,33 @@ int move_left(int **grid, int size){
             }
         }
     }
+    //TILE MERGE
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            if (grid[i][j] != 0) {
+                //jj=j
+                if(grid[i][j]==grid[i][j+1]){
+                    score+=grid[i][j]*2;
+                    grid[i][j]*=2;
+                    grid[i][j+1]=0;
+                    for(int x=j+1;x<size-1;x++){
+                        grid[i][x]=grid[i][x+1];
+                    }
+                }
+            }
+        }
+    }
     return score;
 }
 int move_right(int **grid, int size){
     int score=0;
-    //NUMBERS COLLIDE
+    //MOVEMENT
     for (int i = 0; i < size; i++) {
-        for (int j = size - 2; j >= 0; j--) {
+        for (int j = size - 1; j >= 0; j--) {
             if (grid[i][j] != 0) {
-                //jj=j;
-                for (int jj = j; jj < size; jj++) {
-                    if (grid[i][jj + 1] == grid[i][j]) {
-                        score += grid[i][j] * 2;
-                        grid[i][jj + 1] *= 2;
+                for (int jj = size - 1; jj > 0; jj--) {
+                    if (grid[i][jj] == 0) {
+                        grid[i][jj] = grid[i][j];
                         grid[i][j] = 0;
                         break;
                     }
@@ -98,15 +97,16 @@ int move_right(int **grid, int size){
             }
         }
     }
-    //MOVEMENT
+   //NUMBERS COLLIDE
     for (int i = 0; i < size; i++) {
-        for (int j = 1; j < size; j++) {
+        for (int j = size - 1; j >= 0; j--) {
             if (grid[i][j] != 0) {
-                for (int jj = size - 1; jj > 0; jj--) {
-                    if (grid[i][jj] == 0) {
-                        grid[i][jj] = grid[i][j];
-                        grid[i][j] = 0;
-                        break;
+                if(grid[i][j]==grid[i][j+1]){
+                    score+=grid[i][j]*2;
+                    grid[i][j]*=2;
+                    grid[i][j+1]=0;
+                    for(int x=j+1;x<size-1;x++){
+                        grid[i][x]=grid[i][x+1];
                     }
                 }
             }
@@ -154,6 +154,7 @@ int move_down(int **grid, int size){
         for (int i = size - 2; i >= 0; i--) {
             if (grid[i][j] != 0) {
                 for (int ii = i; ii < size; ii++) {
+                    printf("\ncislo: %d\n",ii);
                     if (grid[ii][j] == grid[i][j]) {
                         score += grid[i][j] * 2;
                         grid[ii][j] *= 2;
@@ -169,6 +170,7 @@ int move_down(int **grid, int size){
         for (int i = size - 2; i >= 0; i--) {
             if (grid[i][j] != 0) {
                 for (int ii = i; ii < size; ii++) {
+                    printf("\nii: %d\n",ii);
                     if (grid[ii][j] == 0) {
                         grid[ii][j] = grid[i][j];
                         grid[i][j] = 0;
@@ -203,11 +205,11 @@ int win(int **grid,int size){
     for(int i =0;i<size;i++){
         for(int j = 0; j<size;j++){
             if(grid[i][j]==2048){
-                return 0;
+                return 1;
             }
         }
     }
-    return 1;
+    return 0;
 }
 int lose(int **grid,int size){
     for(int i =0;i<size;i++){
@@ -224,50 +226,47 @@ void game(int **grid,int size){
     char x;
     add_number(grid,size,score);
     score=0;
-    while(win(grid,size)){
-        print_grid(grid,size);
-        scanf("%c",&x);
+    while(!win(grid,size)) {
+        print_grid(grid, size);
+        scanf(" %c", &x);
         switch (tolower(x)) {
-            case 'u':{
-                score+=movement(grid,size,1);
+            case 'u': {
+                score += movement(grid, size, 1);
                 break;
             }
-            case 'd':{
-                score+=movement(grid,size,3);
+            case 'd': {
+                score += movement(grid, size, 3);
                 break;
             }
-            case 'l':{
-                score+=movement(grid,size,0);
+            case 'l': {
+                score += movement(grid, size, 0);
                 break;
             }
-            case 'r':{
-                score+=movement(grid,size,2);
+            case 'r': {
+                score += movement(grid, size, 2);
                 break;
             }
-            case 'q':{
-                print_grid(grid,size);
-                printf("THANKS FOR PLAYING!\nYOUR FINAL SCORE: %d",score);
+            case 'q': {
+                print_grid(grid, size);
+                printf("THANKS FOR PLAYING!\nYOUR FINAL SCORE: %d", score);
                 return;
             }
-            default:{
+            default: {
                 printf("Wrong input! Try again:");
                 sleep(2);
                 break;
             }
         }
-        if(!lose(grid,size)){
-            add_number(grid,size,score);
-        }else{
-            print_grid(grid,size);
-            printf("YOU LOST!\nYOUR FINAL SCORE: %d",score);
-            return;
-        }
-        if(win(grid,size)){
-            print_grid(grid,size);
-            printf("YOU WON!\nYOUR FINAL SCORE: %d",score);
+        if (!lose(grid, size)) {
+            add_number(grid, size, score);
+        } else {
+            print_grid(grid, size);
+            printf("YOU LOST!\nYOUR FINAL SCORE: %d", score);
             return;
         }
     }
+    print_grid(grid,size);
+    printf("YOU WON!\nYOUR FINAL SCORE: %d",score);
 }
 int main(){
     srand(time(NULL));

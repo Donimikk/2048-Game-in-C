@@ -3,10 +3,11 @@
 #include <time.h>
 
 void print_grid(int **grid, int size) {
-
+    //system("clear || cls");
+    system("cls >nul 2>&1 || clear >nul 2>&1");
     for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            printf("____");
+        for (int j = 0; j < size*4+1; j++) {
+            printf("-");
         }
         printf("\n");
         for(int j = 0; j < size; j++) {
@@ -19,14 +20,22 @@ void print_grid(int **grid, int size) {
         }
         printf("|\n");
     }
-    for (int j = 0; j < size; j++) {
-        printf("____");
+    for (int j = 0; j < size*4+1; j++) {
+        printf("-");
     }
     printf("\n");
 }
 
+void free_grid(int **grid, int size) {
+    for (int i = 0; i < size; i++) {
+        free(grid[i]);
+    }
+    free(grid);
+}
+
+
 int main(){
-    printf("Hello, choose size of the game(4-9)\n");
+    printf("Hello, choose size of the game(4-9): ");
     int size=10;
     while(size<4||size>9){
         scanf("%d",&size);
@@ -52,7 +61,11 @@ int main(){
             board[i][j]=0;
         }
     }
+    system("cls");
     print_grid(board,size);
+    free_grid( board, size);
+
+    return 0;
 
 
 }

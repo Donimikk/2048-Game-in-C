@@ -25,6 +25,7 @@ void print_grid(int **grid, int size) {
         printf("-");
     }
     printf("\n");
+    printf("CHOOSE DIRECTION: ");
 }
 
 void free_grid(int **grid, int size) {
@@ -243,6 +244,11 @@ void game(int **grid,int size){
                 score+=movement(grid,size,2);
                 break;
             }
+            case 'q':{
+                print_grid(grid,size);
+                printf("THANKS FOR PLAYING!\nYOUR FINAL SCORE: %d",score);
+                return;
+            }
             default:{
                 printf("Wrong input! Try again:");
                 sleep(2);
@@ -253,15 +259,20 @@ void game(int **grid,int size){
             add_number(grid,size,score);
         }else{
             print_grid(grid,size);
-            printf("YOU LOST!");
-            break;
+            printf("YOU LOST!\nYOUR FINAL SCORE: %d",score);
+            return;
+        }
+        if(win(grid,size)){
+            print_grid(grid,size);
+            printf("YOU WON!\nYOUR FINAL SCORE: %d",score);
+            return;
         }
     }
 }
 int main(){
     srand(time(NULL));
     printf("Hello, choose size of the game(4-9): ");
-    int size,score=-1;
+    int size;
     do{
         scanf("%d",&size);
     }while(size<4||size>9);
@@ -286,14 +297,7 @@ int main(){
             board[i][j]=0;
         }
     }
-    add_number(board, size, score);
-    print_grid(board,size);
-    score=0;
-    movement(board,size,0);
-
-    print_grid(board,size);
-
-
+    game(board,size);
     free_grid( board, size);
     return 0;
 

@@ -65,9 +65,8 @@ int move_left(int **grid, int size){
     }
     //TILE MERGE
     for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
+        for (int j = 0; j < size-1; j++) {
             if (grid[i][j] != 0) {
-                //jj=j
                 if(grid[i][j]==grid[i][j+1]){
                     score+=grid[i][j]*2;
                     grid[i][j]*=2;
@@ -87,7 +86,7 @@ int move_right(int **grid, int size){
     for (int i = 0; i < size; i++) {
         for (int j = size - 1; j >= 0; j--) {
             if (grid[i][j] != 0) {
-                for (int jj = size - 1; jj > 0; jj--) {
+                for (int jj = size - 1; jj > j; jj--) {
                     if (grid[i][jj] == 0) {
                         grid[i][jj] = grid[i][j];
                         grid[i][j] = 0;
@@ -101,7 +100,7 @@ int move_right(int **grid, int size){
     for (int i = 0; i < size; i++) {
         for (int j = size - 1; j >= 0; j--) {
             if (grid[i][j] != 0) {
-                if(grid[i][j]==grid[i][j+1]){
+                if(grid[i][j]==grid[i][j-1]){
                     score+=grid[i][j]*2;
                     grid[i][j]*=2;
                     grid[i][j+1]=0;
@@ -116,14 +115,13 @@ int move_right(int **grid, int size){
 }
 int move_up(int **grid, int size){
     int score=0;
-    //NUMBERS COLLIDE
+    //MOVEMENT
     for (int j = 0; j < size; ++j) {
-        for (int i = 1; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             if (grid[i][j] != 0) {
-                for (int ii = i; ii >= 0; ii--) {
-                    if (grid[ii][j] == grid[i][j]) {
-                        score += grid[i][j] * 2;
-                        grid[ii][j] *= 2;
+                for (int ii = 0; ii < i; ii++) {
+                    if (grid[ii][j] == 0) {
+                        grid[ii][j] = grid[i][j];
                         grid[i][j] = 0;
                         break;
                     }
@@ -131,15 +129,16 @@ int move_up(int **grid, int size){
             }
         }
     }
-    //MOVEMENT
+    //NUMBERS COLLIDE
     for (int j = 0; j < size; ++j) {
-        for (int i = 1; i < size; i++) {
+        for (int i = 0; i < size-1; i++) {
             if (grid[i][j] != 0) {
-                for (int ii = i; ii >= 0; ii--) {
-                    if (grid[ii][j] == 0) {
-                        grid[ii][j] = grid[i][j];
-                        grid[i][j] = 0;
-                        break;
+                if(grid[i][j]==grid[i+1][j]){
+                    score+=grid[i][j]*2;
+                    grid[i][j]*=2;
+                    grid[i+1][j]=0;
+                    for(int x=i+1;x<size-1;x++){
+                        grid[x][j]=grid[x+1][j];
                     }
                 }
             }
@@ -149,15 +148,13 @@ int move_up(int **grid, int size){
 }
 int move_down(int **grid, int size){
     int score = 0;
-    //NUMBERS COLLIDE
+    //MOVEMENT
     for (int j = 0; j < size; ++j) {
-        for (int i = size - 2; i >= 0; i--) {
+        for (int i = size - 1; i >= 0; i--) {
             if (grid[i][j] != 0) {
-                for (int ii = i; ii < size; ii++) {
-                    printf("\ncislo: %d\n",ii);
-                    if (grid[ii][j] == grid[i][j]) {
-                        score += grid[i][j] * 2;
-                        grid[ii][j] *= 2;
+                for (int ii = size-1; ii > i; ii--) {
+                    if (grid[ii][j] == 0) {
+                        grid[ii][j] = grid[i][j];
                         grid[i][j] = 0;
                         break;
                     }
@@ -165,16 +162,16 @@ int move_down(int **grid, int size){
             }
         }
     }
-    //MOVEMENT
+    //NUMBERS COLLIDE
     for (int j = 0; j < size; ++j) {
-        for (int i = size - 2; i >= 0; i--) {
+        for (int i = size - 1; i > 0; i--) {
             if (grid[i][j] != 0) {
-                for (int ii = i; ii < size; ii++) {
-                    printf("\nii: %d\n",ii);
-                    if (grid[ii][j] == 0) {
-                        grid[ii][j] = grid[i][j];
-                        grid[i][j] = 0;
-                        break;
+                if(grid[i][j]==grid[i-1][j]){
+                    score+=grid[i][j]*2;
+                    grid[i][j]*=2;
+                    grid[i-1][j]=0;
+                    for(int x=i-1;x>0;x--){
+                        grid[x][j]=grid[x-1][j];
                     }
                 }
             }

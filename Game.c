@@ -2,14 +2,16 @@
 #include <stdlib.h>
 #include <time.h>
 #include <ctype.h>
-#include <unistd.h>
+#include <fcntl.h>
+#include <stdbool.h>
 
-void print_grid(int **grid, int size,int score) {
+void print_grid(int **grid, int size,int score, int best) {
     system("clear || cls");
     char offset;
     printf("\n\n\t\t2048 GAME");
     printf("\n=========================================\n"
-           "YOUR SCORE: %d\n",score);
+           "YOUR SCORE: %d\n"
+           "BEST SCORE: %d\n",score,best);
 
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size*4+1; j++) {
@@ -30,7 +32,9 @@ void print_grid(int **grid, int size,int score) {
         printf("-");
     }
     printf("\n");
-    printf("CHOOSE DIRECTION: ");
+    printf("QUIT-> q\n"
+           "RESTART-> r\n"
+           "MOVEMENT-> wasd\n");
 }
 
 void free_grid(int **grid, int size) {
@@ -108,9 +112,9 @@ int move_right(int **grid, int size){
                 if(grid[i][j]==grid[i][j-1]){
                     score+=grid[i][j]*2;
                     grid[i][j]*=2;
-                    grid[i][j+1]=0;
-                    for(int x=j+1;x<size-1;x++){
-                        grid[i][x]=grid[i][x+1];
+                    grid[i][j-1]=0;
+                    for(int x=j-1;x>0;x--){
+                        grid[i][x]=grid[i][x-1];
                     }
                 }
             }
@@ -223,52 +227,61 @@ int lose(int **grid,int size){
     }
     return 1;
 }
-void game(int **grid,int size){
+int game(int **grid,int size,int best){
     int score=-1;
     char x;
     add_number(grid,size,score);
     score=0;
     while(!win(grid,size)) {
-        print_grid(grid, size,score);
+        print_grid(grid, size,score,best);
+        printf("CHOOSE DIRECTION: ");
         scanf(" %c", &x);
-        switch (tolower(x)) {
-            case 'u': {
-                score += movement(grid, size, 1);
-                break;
+
+        bool def;
+        do {
+            def=0;
+            switch (tolower(x)) {
+                case 'w': {
+                    score += movement(grid, size, 1);
+                    break;
+                }
+                case 's': {
+                    score += movement(grid, size, 3);
+                    break;
+                }
+                case 'a': {
+                    score += movement(grid, size, 0);
+                    break;
+                }
+                case 'd': {
+                    score += movement(grid, size, 2);
+                    break;
+                }
+                case 'q': {
+                    print_grid(grid, size, score,best);
+                    printf("THANKS FOR PLAYING!\nYOUR FINAL SCORE: %d", score);
+                    return score;
+                }
+                default: {
+                    print_grid(grid, size, score,best);
+                    printf("WRONG INPUT, TRY AGAIN: ");
+                    scanf(" %c", &x);
+                    def=1;
+                    break;
+                }
             }
-            case 'd': {
-                score += movement(grid, size, 3);
-                break;
-            }
-            case 'l': {
-                score += movement(grid, size, 0);
-                break;
-            }
-            case 'r': {
-                score += movement(grid, size, 2);
-                break;
-            }
-            case 'q': {
-                print_grid(grid, size,score);
-                printf("THANKS FOR PLAYING!\nYOUR FINAL SCORE: %d", score);
-                return;
-            }
-            default: {
-                printf("Wrong input! Try again:");
-                sleep(2);
-                break;
-            }
-        }
+        }while(def);
         if (!lose(grid, size)) {
             add_number(grid, size, score);
         } else {
-            print_grid(grid, size,score);
+            print_grid(grid, size,score,best);
             printf("YOU LOST!\nYOUR FINAL SCORE: %d", score);
-            return;
+            return score;
         }
     }
-    print_grid(grid,size,score);
+    print_grid(grid,size,score,best);
     printf("YOU WON!\nYOUR FINAL SCORE: %d",score);
+    return score;
 }
 int main(){
     srand(time(NULL));
@@ -298,8 +311,26 @@ int main(){
             board[i][j]=0;
         }
     }
-    game(board,size);
+
+    int scoreboard = open("score.txt", O_RDWR | O_CREAT, 0666 );
+    if(scoreboard==-1){
+        printf("Error opening scoreboard\n");
+        //close(scoreboard);
+        free_grid(board,size);
+        return 1;
+    }
+    int bestscore = 0;
+    if (read(scoreboard, &bestscore, sizeof(int)) != sizeof(int)) {
+        bestscore = 0;  // Initialize if read fails
+    }
+
+    int score = game(board, size, bestscore);
+    if (score > bestscore) {
+        lseek(scoreboard, 0, SEEK_SET);
+        write(scoreboard, &score, sizeof(int));  // Write the new high score
+    }
     free_grid( board, size);
+    close(scoreboard);
     return 0;
 
 

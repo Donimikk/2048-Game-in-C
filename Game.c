@@ -5,6 +5,65 @@
 #include <fcntl.h>
 #include <stdbool.h>
 
+void print_grid(int **grid, int size,int score, int best);
+void free_grid(int **grid, int size);
+
+void add_number(int **grid, int size, int score);
+int move_left(int **grid, int size);
+int move_right(int **grid, int size);
+int move_up(int **grid, int size);
+int move_down(int **grid, int size);
+int movement(int **grid, int size, int dir);
+int win(int **grid,int size);
+int lose(int **grid,int size);
+void clean_grid(int **grid,int size);
+int game(int **grid,int size,int best);
+int main(){
+    srand(time(NULL));
+    printf("Hello, choose size of the game(4-9): ");
+    int size;
+    do{
+        scanf("%d",&size);
+    }while(size<4||size>9);
+    int **board = malloc(size*sizeof(int*));
+    if(board==NULL){
+        printf("Error allocating memory for board\n");
+        return 1;
+    }
+    for(int i=0;i<size;i++){
+        board[i]=malloc(size*sizeof(int));
+        if(board[i]==NULL){
+            printf("Error allocating memory for board\n");
+            for(int j=0;j<i;j++){
+                free(board[j]);
+            }
+            free(board);
+            return 1;
+        }
+    }
+    clean_grid(board, size);
+
+    int scoreboard = open("score.txt", O_RDWR | O_CREAT, 0666 );
+    if(scoreboard==-1){
+        printf("Error opening scoreboard\n");
+        //close(scoreboard);
+        free_grid(board,size);
+        return 1;
+    }
+    int bestscore = 0;
+    if (read(scoreboard, &bestscore, sizeof(int)) != sizeof(int)) {
+        bestscore = 0;  // Initialize if read fails
+    }
+
+    int score = game(board, size, bestscore);
+    if (score > bestscore) {
+        lseek(scoreboard, 0, SEEK_SET);
+        write(scoreboard, &score, sizeof(int));  // Write the new high score
+    }
+    free_grid( board, size);
+    close(scoreboard);
+    return 0;
+}
 void print_grid(int **grid, int size,int score, int best) {
     system("clear || cls");
     char offset;
@@ -36,14 +95,12 @@ void print_grid(int **grid, int size,int score, int best) {
            "RESTART-> r\n"
            "MOVEMENT-> wasd\n");
 }
-
 void free_grid(int **grid, int size) {
     for (int i = 0; i < size; i++) {
         free(grid[i]);
     }
     free(grid);
 }
-
 void add_number(int **grid, int size, int score) {
     int i,j;
     int value = rand() % 10;
@@ -105,7 +162,7 @@ int move_right(int **grid, int size){
             }
         }
     }
-   //NUMBERS COLLIDE
+    //NUMBERS COLLIDE
     for (int i = 0; i < size; i++) {
         for (int j = size - 1; j >= 0; j--) {
             if (grid[i][j] != 0) {
@@ -297,50 +354,4 @@ int game(int **grid,int size,int best){
     print_grid(grid,size,score,best);
     printf("YOU WON!\nYOUR FINAL SCORE: %d",score);
     return score;
-}
-int main(){
-    srand(time(NULL));
-    printf("Hello, choose size of the game(4-9): ");
-    int size;
-    do{
-        scanf("%d",&size);
-    }while(size<4||size>9);
-    int **board = malloc(size*sizeof(int*));
-    if(board==NULL){
-        printf("Error allocating memory for board\n");
-        return 1;
-    }
-    for(int i=0;i<size;i++){
-        board[i]=malloc(size*sizeof(int));
-        if(board[i]==NULL){
-            printf("Error allocating memory for board\n");
-            for(int j=0;j<i;j++){
-                free(board[j]);
-            }
-            free(board);
-            return 1;
-        }
-    }
-    clean_grid(board, size);
-
-    int scoreboard = open("score.txt", O_RDWR | O_CREAT, 0666 );
-    if(scoreboard==-1){
-        printf("Error opening scoreboard\n");
-        //close(scoreboard);
-        free_grid(board,size);
-        return 1;
-    }
-    int bestscore = 0;
-    if (read(scoreboard, &bestscore, sizeof(int)) != sizeof(int)) {
-        bestscore = 0;  // Initialize if read fails
-    }
-
-    int score = game(board, size, bestscore);
-    if (score > bestscore) {
-        lseek(scoreboard, 0, SEEK_SET);
-        write(scoreboard, &score, sizeof(int));  // Write the new high score
-    }
-    free_grid( board, size);
-    close(scoreboard);
-    return 0;
 }

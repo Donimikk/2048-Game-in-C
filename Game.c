@@ -4,8 +4,13 @@
 #include <ctype.h>
 #include <unistd.h>
 
-void print_grid(int **grid, int size) {
-    //system("clear || cls");
+void print_grid(int **grid, int size,int score) {
+    system("clear || cls");
+    char offset;
+    printf("\n\n\t\t2048 GAME");
+    printf("\n=========================================\n"
+           "YOUR SCORE: %d\n",score);
+
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size*4+1; j++) {
             printf("-");
@@ -224,7 +229,7 @@ void game(int **grid,int size){
     add_number(grid,size,score);
     score=0;
     while(!win(grid,size)) {
-        print_grid(grid, size);
+        print_grid(grid, size,score);
         scanf(" %c", &x);
         switch (tolower(x)) {
             case 'u': {
@@ -244,7 +249,7 @@ void game(int **grid,int size){
                 break;
             }
             case 'q': {
-                print_grid(grid, size);
+                print_grid(grid, size,score);
                 printf("THANKS FOR PLAYING!\nYOUR FINAL SCORE: %d", score);
                 return;
             }
@@ -257,12 +262,12 @@ void game(int **grid,int size){
         if (!lose(grid, size)) {
             add_number(grid, size, score);
         } else {
-            print_grid(grid, size);
+            print_grid(grid, size,score);
             printf("YOU LOST!\nYOUR FINAL SCORE: %d", score);
             return;
         }
     }
-    print_grid(grid,size);
+    print_grid(grid,size,score);
     printf("YOU WON!\nYOUR FINAL SCORE: %d",score);
 }
 int main(){

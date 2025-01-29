@@ -227,6 +227,13 @@ int lose(int **grid,int size){
     }
     return 1;
 }
+void clean_grid(int **grid,int size){
+    for(int i=0;i<size;i++){
+        for(int j=0;j<size;j++){
+            grid[i][j]=0;
+        }
+    }
+}
 int game(int **grid,int size,int best){
     int score=-1;
     char x;
@@ -262,6 +269,11 @@ int game(int **grid,int size,int best){
                     printf("THANKS FOR PLAYING!\nYOUR FINAL SCORE: %d", score);
                     return score;
                 }
+                case 'r': {
+                    clean_grid(grid, size);
+                    score=-1;
+                    break;
+                }
                 default: {
                     print_grid(grid, size, score,best);
                     printf("WRONG INPUT, TRY AGAIN: ");
@@ -273,6 +285,9 @@ int game(int **grid,int size,int best){
         }while(def);
         if (!lose(grid, size)) {
             add_number(grid, size, score);
+            if(score == -1){
+                score=0;
+            }
         } else {
             print_grid(grid, size,score,best);
             printf("YOU LOST!\nYOUR FINAL SCORE: %d", score);
@@ -306,11 +321,7 @@ int main(){
             return 1;
         }
     }
-    for(int i=0;i<size;i++){
-        for(int j=0;j<size;j++){
-            board[i][j]=0;
-        }
-    }
+    clean_grid(board, size);
 
     int scoreboard = open("score.txt", O_RDWR | O_CREAT, 0666 );
     if(scoreboard==-1){
@@ -332,6 +343,4 @@ int main(){
     free_grid( board, size);
     close(scoreboard);
     return 0;
-
-
 }
